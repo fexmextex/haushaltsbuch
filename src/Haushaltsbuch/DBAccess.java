@@ -1,3 +1,14 @@
+/**
+ * Das ist die Datenbankzugriffsklasse.
+ * bei Konstruktoraufruf:
+ * 	- verbindet Sie sich mit der Datenbank "haushaltsbuch.db"
+ *  	(welche sich im selben Ordner wie das Jar-File befinden muss)
+ * 	- danach ließt Sie die Datenbank und speichert die Daten im "data"-Array
+ * 
+ * Sie bietet einige Öffentliche Methoden, welche die Datenbankkommunikation
+ * 	ermöglichen.
+ */
+
 package Haushaltsbuch;
 
 import java.sql.Connection;
@@ -8,56 +19,50 @@ import java.sql.Statement;
 
 public class DBAccess {
 
-	Connection connection;
+	final private Connection connection;
 	private Object[][] data;
-
-	Double ktoStand = 0.0;
-	double kontoraus;
 	
-	int rows = 0;
-	Double lastKontoValue = 0.0;
+	private int rowAmount = 0;
+	private Double lastKontoValue = 0.0;
 	
 	public DBAccess() throws SQLException {
 		this.connection = establishConnection();
 		selectAll();
 	}
 	
-	public double getLastKontoValue() {
-		return this.lastKontoValue;
-	}
-
 	public Object[][] getData() {
 		return this.data;
 	}
 	
-	public double getKontoraus() {
-		return this.kontoraus;
+	public double getLastKontoValue() {
+		return this.lastKontoValue;
 	}
 	
-	public int getRows() {
-		return this.rows;
+	public int getRowAmount() {
+		return this.rowAmount;
 	}
 	
-	public void addOneRow() {
-		this.rows++;
+	public void addOneToRowAmount() {
+		this.rowAmount++;
 	}
 	
-	public void removeOneRow() {
-		this.rows--;
+	public void removeOneFromRowAmount() {
+		this.rowAmount--;
 	}
 
 	public Connection establishConnection() throws SQLException {
-		String dbPath = "jdbc:sqlite:haushaltsbuch.db";
-
+		String dbPath = "jdbc:sqlite:assets/haushaltsbuch.db";
 		return DriverManager.getConnection(dbPath);
 	}
 
 	public void selectAll() throws SQLException {
 		data = new String[rowCounter()][5];
+		
 		String sql = "SELECT * FROM buch";
 		Statement statement = this.connection.createStatement();
 		ResultSet result = statement.executeQuery(sql);
-
+		Double ktoStand = 0.0;
+		
 		int z = 0;
 		while (result.next()) {
 			ktoStand = result.getDouble("kontostand");
@@ -71,17 +76,10 @@ public class DBAccess {
 			data[z][3] = result.getString("grund");
 			
 			data[z][4] = result.getString("datum");
-
-			System.out.println(
-					(data[z][0] + " | " + data[z][1] + " | " + data[z][2] + " | " + data[z][3] + " | " + data[z][4])); // test
 			z++;
 		}
-		kontoraus = ktoStand;
-		System.out.println(kontoraus);
 		
 		this.lastKontoValue = ktoStand;
-		
-
 	}
 	
 	private int rowCounter() throws SQLException {
@@ -90,11 +88,7 @@ public class DBAccess {
 		ResultSet result = statement.executeQuery(sql);
 		result.next();
 		
-		return this.rows = result.getInt(1);
-	}
-
-	public void closeConnection() throws SQLException {
-		this.connection.close();
+		return this.rowAmount = result.getInt(1);
 	}
 	
 	public void insertKontostand(final Double kontostand, final String date) throws SQLException {
@@ -109,7 +103,7 @@ public class DBAccess {
 	}
 
 	public void insert(final Double betrag, final String kategorie, final String grund, final String date) throws SQLException {
-		Double kontostand = this.lastKontoValue + betrag;		
+		Double kontostand = this.lastKontoValue + betrag;	
 		
 		String sql = "INSERT INTO buch(kontostand,betrag,kategorie,grund,datum) VALUES ('" + kontostand + "','" + betrag + "','"
 				+ kategorie + "','" + grund + "','" + date.toString() + "')";
@@ -153,8 +147,7 @@ public class DBAccess {
 				+ kategorie + "','" + grund + "','" + date.toString() + "')";
 		
 		Statement statement = this.connection.createStatement();
-		statement.executeUpdate(sql);
-		
+		statement.executeUpdate(sql);		
 		
 		this.lastKontoValue += doubleBetrag;
 	}

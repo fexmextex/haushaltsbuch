@@ -1,3 +1,10 @@
+/**
+ * Diese Klasse ist die Main:
+ * 	- hier wird die komplette UI konstruiert
+ *  - wenn der Konstruktor aufgerufen wird, erstellt Sie direkt eine Instanz
+ *  	der Klasse DBAccess
+ */
+
 package Haushaltsbuch;
 
 import java.awt.Color;
@@ -11,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -58,8 +66,10 @@ public class Main extends JFrame implements ActionListener {
 					Main frame = new Main();
 					frame.getContentPane().setPreferredSize(new Dimension(700, 475));
 					frame.pack();
+					frame.setResizable(false);
 					frame.setLocationRelativeTo(null);
 					frame.setVisible(true);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -76,15 +86,18 @@ public class Main extends JFrame implements ActionListener {
 		this.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		this.setContentPane(contentPane);
 		this.contentPane.setLayout(null);
+		
+		contentPane.setBackground(new Color(255,220,220));
+		
+		final ImageIcon img = new ImageIcon("assets/fire.png");
+		this.setIconImage(img.getImage());
 
-//		this.setIconImage(new ImageIcon(getClass().getResource("fire.png")).getImage());
-
-		JLabel lblKontostand = new JLabel("Kontostand");
+		final JLabel lblKontostand = new JLabel("Kontostand");
 		lblKontostand.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		lblKontostand.setBounds(230, 20, 87, 16);
 		contentPane.add(lblKontostand);
 
-		lblKontoWert = new JLabel(dbAccess.getKontoraus() + " €");
+		lblKontoWert = new JLabel(dbAccess.getLastKontoValue() + " €");
 		lblKontoWert.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		lblKontoWert.setBounds(320, 20, 133, 16);
 		contentPane.add(lblKontoWert);
@@ -101,7 +114,7 @@ public class Main extends JFrame implements ActionListener {
 		contentPane.add(txtKonto);
 		txtKonto.setColumns(10);
 
-		JLabel lblSumme = new JLabel("Summe:");
+		final JLabel lblSumme = new JLabel("Summe:");
 		lblSumme.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblSumme.setBounds(27, 140, 151, 39);
 		contentPane.add(lblSumme);
@@ -112,19 +125,19 @@ public class Main extends JFrame implements ActionListener {
 		txtSumme.setBounds(27, 170, 176, 32);
 		contentPane.add(txtSumme);
 
-		JLabel lblkategorie = new JLabel("Kategorie:");
+		final JLabel lblkategorie = new JLabel("Kategorie:");
 		lblkategorie.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblkategorie.setBounds(27, 203, 151, 39);
 		contentPane.add(lblkategorie);
 
-		String[] kategorie = { "Gehalt", "Miete", "Lebensmittel", "Auto", "Computer", "Freizeit", "Haushalt" };
+		final String[] kategorie = { "Gehalt", "Miete", "Lebensmittel", "Auto", "Computer", "Freizeit", "Haushalt" };
 		comboBoxKategorie = new JComboBox<>(kategorie);
 		comboBoxKategorie.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		comboBoxKategorie.setBounds(27, 235, 176, 32);
 		comboBoxKategorie.addActionListener(this);
 		contentPane.add(comboBoxKategorie);
 
-		JLabel lbldatum = new JLabel("Datum");
+		final JLabel lbldatum = new JLabel("Datum");
 		lbldatum.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lbldatum.setBounds(27, 330, 151, 39);
 		contentPane.add(lbldatum);
@@ -137,7 +150,7 @@ public class Main extends JFrame implements ActionListener {
 
 		makeTable();
 
-		JLabel lblGrund = new JLabel("Grund:");
+		final JLabel lblGrund = new JLabel("Grund:");
 		lblGrund.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lblGrund.setBounds(27, 270, 151, 39);
 		contentPane.add(lblGrund);
@@ -150,7 +163,6 @@ public class Main extends JFrame implements ActionListener {
 
 		dateChooser = new JDateChooser();
 		dateChooser.setBounds(27, 361, 176, 34);
-
 		dateChooser.setDate(new Date());
 		contentPane.add(dateChooser);
 
@@ -167,12 +179,10 @@ public class Main extends JFrame implements ActionListener {
 		btnDelete.setBounds(498, 410, 177, 35);
 		btnDelete.addActionListener(this);
 		contentPane.add(btnDelete);
-
-		txtKonto.requestFocus();
 	}
 
 	public void makeTable() {
-		String[] columNames = { "Kontostand", "Betrag", "Kategorie", "Grund", "Datum" };
+		final String[] columNames = { "Kontostand", "Betrag", "Kategorie", "Grund", "Datum" };
 
 		if (dbAccess.getData() != null) {
 			dtm = new DefaultTableModel(dbAccess.getData(), columNames) {
@@ -203,7 +213,7 @@ public class Main extends JFrame implements ActionListener {
 			}
 		});
 
-		JScrollPane scrollPane = new JScrollPane(table);
+		final JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBounds(225, 53, 450, 343);
 		scrollPane.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
 		scrollPane.setAutoscrolls(true);
@@ -214,7 +224,7 @@ public class Main extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == this.btnKontoAendern) {
 
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
 			String date = simpleDateFormat.format(dateChooser.getDate());
 
 			try {
@@ -230,7 +240,7 @@ public class Main extends JFrame implements ActionListener {
 				e1.printStackTrace();
 			}
 			txtKonto.setText(null);
-			dbAccess.addOneRow();
+			dbAccess.addOneToRowAmount();
 		}
 
 		if (e.getSource() == this.btnEinAus) {
@@ -272,7 +282,7 @@ public class Main extends JFrame implements ActionListener {
 			txtSumme.setText(null);
 			txtGrund.setText(null);
 			txtSumme.requestFocus();
-			dbAccess.addOneRow();
+			dbAccess.addOneToRowAmount();
 		}
 
 		if (e.getSource() == this.btnDelete) {
@@ -290,7 +300,7 @@ public class Main extends JFrame implements ActionListener {
 		try {
 			dbAccess.deleteEverything();
 
-			for (int i = 0; i < dbAccess.getRows(); i++) {
+			for (int i = 0; i < dbAccess.getRowAmount(); i++) {
 				toDelete = new Object[5];
 				toDelete[0] = table.getValueAt(i, 0);
 				toDelete[1] = table.getValueAt(i, 1);
@@ -306,20 +316,18 @@ public class Main extends JFrame implements ActionListener {
 	}
 
 	private void fixKontostandInTable(int savedIdx) {
-		Double removedKontostand = Double.parseDouble(dtm.getValueAt(savedIdx, 0).toString());
-
 		dtm.removeRow(savedIdx);
-		dbAccess.removeOneRow();
+		dbAccess.removeOneFromRowAmount();
 		
-		if (dbAccess.getRows() > 0) {
-			lblKontoWert.setText(dtm.getValueAt(dbAccess.getRows() - 1, 0).toString() + " €");
+		if (dbAccess.getRowAmount() > 0) {
+			lblKontoWert.setText(dtm.getValueAt(dbAccess.getRowAmount() - 1, 0).toString() + " €");
 		} else {			
 			lblKontoWert.setText("0 €");			
 		}
 
 		try {
-			while (savedIdx < dbAccess.getRows()) {
-				if (savedIdx == 0 && dbAccess.getRows() > 0) {
+			while (savedIdx < dbAccess.getRowAmount()) {
+				if (savedIdx == 0 && dbAccess.getRowAmount() > 0) {
 					Double tmpBetrag = Double.parseDouble(dtm.getValueAt(savedIdx, 1).toString());
 					dtm.setValueAt(tmpBetrag, savedIdx, 0);
 					lblKontoWert.setText(dtm.getValueAt(savedIdx, 0).toString() + " €");
