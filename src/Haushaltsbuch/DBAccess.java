@@ -5,8 +5,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
-import java.util.Date;
 
 public class DBAccess {
 
@@ -16,6 +14,7 @@ public class DBAccess {
 	Double ktoStand = 0.0;
 	double kontoraus;
 	
+	int rows = 0;
 	Double lastKontoValue = 0.0;
 	
 	public DBAccess() throws SQLException {
@@ -34,13 +33,21 @@ public class DBAccess {
 	public double getKontoraus() {
 		return this.kontoraus;
 	}
+	
+	public int getRows() {
+		return this.rows;
+	}
+	
+	public void addOneRow() {
+		this.rows++;
+	}
+	
+	public void removeOneRow() {
+		this.rows--;
+	}
 
 	public Connection establishConnection() throws SQLException {
-		String tmp = DBAccess.class.getProtectionDomain().getCodeSource().getLocation().getPath().toString()
-				.replace("file:/", "").replace("sqlDemo.jar", "");
-		String dbPath = "jdbc:sqlite:" + tmp + "haushaltsbuch.db";		
-
-//		String dbPath = "jdbc:sqlite:haushaltsbuch.db"; // für jarDatei
+		String dbPath = "jdbc:sqlite:haushaltsbuch.db";
 
 		return DriverManager.getConnection(dbPath);
 	}
@@ -74,9 +81,7 @@ public class DBAccess {
 		
 		this.lastKontoValue = ktoStand;
 		
-		// test 
-		result.close();
-		statement.close();
+
 	}
 	
 	private int rowCounter() throws SQLException {
@@ -84,14 +89,26 @@ public class DBAccess {
 		Statement statement = this.connection.createStatement();
 		ResultSet result = statement.executeQuery(sql);
 		result.next();
-		return result.getInt(1);
+		
+		return this.rows = result.getInt(1);
 	}
 
 	public void closeConnection() throws SQLException {
 		this.connection.close();
 	}
+	
+	public void insertKontostand(final Double kontostand, final String date) throws SQLException {
+		String sql = "INSERT INTO buch(kontostand,betrag,kategorie,grund,datum) VALUES ('" + kontostand + "','','-','-','" + date + "')";
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate(sql);
+				
+		Object[] tmp = {kontostand, 0.0, "-", "-", date};
+		Main.dtm.addRow(tmp);
+		
+		this.lastKontoValue = kontostand;
+	}
 
-	public void insert(final Double betrag, final String kategorie, final String grund, final Date date) throws SQLException {
+	public void insert(final Double betrag, final String kategorie, final String grund, final String date) throws SQLException {
 		Double kontostand = this.lastKontoValue + betrag;		
 		
 		String sql = "INSERT INTO buch(kontostand,betrag,kategorie,grund,datum) VALUES ('" + kontostand + "','" + betrag + "','"
@@ -105,26 +122,41 @@ public class DBAccess {
 		this.lastKontoValue = kontostand;
 	}
 	
-	public void insert(final double kontostand) throws SQLException {
-		String date = LocalDate.now().toString();
-		String sql = "INSERT INTO buch(kontostand,betrag,kategorie,grund,datum) VALUES ('" + kontostand + "','','-','-','" + date + "')";
+	public void delete(final Object kontostand, final Object betrag, final Object kategorie, final Object grund, final Object date) throws SQLException {
+		this.lastKontoValue -= Double.parseDouble(betrag.toString()); // hier
+		String sqlBetrag = "";		
+		if(!betrag.toString().equals("0.0")) {
+			sqlBetrag = " AND betrag = " + betrag;			
+		}		
+
+		String sql = "DELETE FROM buch WHERE kontostand = " + kontostand + //
+				sqlBetrag + //
+				" AND kategorie = '" + kategorie + //
+				"' AND grund = '" + grund + //
+				"' AND datum = '" + date + "'";
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate(sql);
+	}
+	
+	public void deleteEverything() throws SQLException {
+		String sql = "DELETE FROM buch";
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate(sql);
+		this.lastKontoValue = 0.0;
+	}
+
+	public void kevinDerSchlawiner(final Object kontostand, final Object betrag, final Object kategorie,
+			final Object grund, final Object date) throws SQLException {
+		Double doubleBetrag = Double.parseDouble(betrag.toString());
+		
+		String sql = "INSERT INTO buch(kontostand,betrag,kategorie,grund,datum) VALUES ('" + kontostand + "','" + betrag + "','"
+				+ kategorie + "','" + grund + "','" + date.toString() + "')";
+		
 		Statement statement = this.connection.createStatement();
 		statement.executeUpdate(sql);
 		
-		this.lastKontoValue = kontostand;
-
-		Object[] tmp = {kontostand, 0, "-", "-", date};
-		Main.dtm.addRow(tmp);
-	}
-	
-	public void delete(final Object kontostand, final Object betrag, final Object kategorie, final Object grund, final Object date) throws SQLException {
-		String sql = "DELETE FROM buch WHERE kontostand = " + kontostand + //
-							" AND betrag = " + betrag + //
-							" AND kategorie = '" + kategorie + //
-							"' AND grund = '" + grund + //
-							"' AND datum = '" + date + "'";
-		Statement statement = this.connection.createStatement();
-		statement.executeUpdate(sql);
+		
+		this.lastKontoValue += doubleBetrag;
 	}
 
 }
